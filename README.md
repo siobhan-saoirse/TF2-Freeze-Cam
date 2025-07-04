@@ -1,2 +1,2 @@
-# TF2 Freeze Cam
-My version of the freeze cam addon, written from scratch.
+# Siobhan's Death and Freeze Cam
+Please look in the code before complaining.
