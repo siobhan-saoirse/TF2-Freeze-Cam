@@ -1,5 +1,5 @@
--- port of tf2's deathcam, but in x86_64, the deathcam was changed to be 1 second longer, however it does not support NPCs, so i had to make my own here.
-hook.Add("CalcView", "TF2_DeathCamView", function(ply, pos, angles, fov)
+-- port of tf2's deathcam, but modified
+hook.Add("CalcView", "DeathCamView", function(ply, pos, angles, fov)
     if not IsValid(ply) then return end
     if ply:Team() == TEAM_SPECTATOR then return end
     if ply:GetObserverMode() ~= OBS_MODE_DEATHCAM then return end
@@ -18,7 +18,7 @@ hook.Add("CalcView", "TF2_DeathCamView", function(ply, pos, angles, fov)
 		origin = ragdoll:GetPos() + Vector(0, 0, 15)
 	end
     local forward = Angle(eyeAngles.p, eyeAngles.y, eyeAngles.r)
-    local interpolation = math.Clamp((CurTime() - (ply:GetNWFloat("DeathTime",0) or 0)) / 1, 0, 1)
+    local interpolation = math.Clamp((CurTime() - (ply:GetNWFloat("DeathTime",0) or 0)) / 1.0, 0, 1)
     interpolation = math.ease.InOutCubic(interpolation)
 
     -- Setup chase distances
@@ -152,16 +152,11 @@ hook.Add("DoPlayerDeath","TF2_DeathTime",function(ply, attacker, dmginfo)
             ply:Spectate(OBS_MODE_DEATHCAM)
             if (IsValid(attacker) and (attacker:IsPlayer() or attacker:IsNPC() or attacker:IsNextBot()) and attacker:EntIndex() ~= ply:EntIndex()) then
                 ply:SpectateEntity(attacker)
-                timer.Simple(2.0, function()
+                timer.Simple(1.0, function()
                     if (!IsValid(attacker)) then return end
                     if (!ply:Alive()) then
                         ply:SetObserverMode(OBS_MODE_FREEZECAM)
-                        ply:SendLua([[surface.PlaySound("misc/freeze_cam.wav")]])
-                        if (attacker:IsNPC() or attacker:IsNextBot()) then
-                            ply:SendLua([[LocalPlayer():PrintMessage(HUD_PRINTCENTER,"You were killed by a "..language.GetPhrase( "]]..GAMEMODE:GetDeathNoticeEntityName(attacker)..[[" ) )]])
-                        else
-                            ply:PrintMessage(HUD_PRINTCENTER,"You were killed by "..attacker:Nick())
-                        end
+                        ply:SendLua([[surface.PlaySound("ui/freeze_cam.wav")]])
                         timer.Simple(4.0, function()
                             if (ply:Alive()) then return end
                             if (ply.index > table.Count(getAlivePlayers(ply))) then
